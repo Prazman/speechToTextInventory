@@ -284,35 +284,39 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.onload = () => {
       const parsed = parseCSV(reader.result);
       if (!parsed.length) { alert('No data found in CSV file.'); return; }
-      // Merge: append items to existing rooms by name, create new rooms otherwise
-      const rooms = storage.loadRooms();
-      for (const csvRoom of parsed) {
-        const existing = rooms.find(r => r.name.toLowerCase() === csvRoom.name.toLowerCase());
-        if (existing) {
-          for (const csvItem of csvRoom.items) {
-            existing.items.push({
-              id: crypto.randomUUID(),
-              item: csvItem.item,
-              quantity: csvItem.quantity,
-              category: csvItem.category,
-              notes: csvItem.notes,
-            });
-          }
+
+      const toRooms = (list) => list.map(r => ({
+        id: crypto.randomUUID(),
+        name: r.name,
+        items: r.items.map(i => ({
+          id: crypto.randomUUID(),
+          item: i.item,
+          quantity: i.quantity,
+          category: i.category,
+          notes: i.notes,
+        })),
+      }));
+
+      const existing = storage.loadRooms();
+      if (existing.length > 0) {
+        const replace = confirm('Replace existing data?\n\nOK = Replace all\nCancel = Merge (add to existing)');
+        if (replace) {
+          storage.saveRooms(toRooms(parsed));
         } else {
-          rooms.push({
-            id: crypto.randomUUID(),
-            name: csvRoom.name,
-            items: csvRoom.items.map(i => ({
-              id: crypto.randomUUID(),
-              item: i.item,
-              quantity: i.quantity,
-              category: i.category,
-              notes: i.notes,
-            })),
-          });
+          const rooms = existing;
+          for (const csvRoom of toRooms(parsed)) {
+            const match = rooms.find(r => r.name.toLowerCase() === csvRoom.name.toLowerCase());
+            if (match) {
+              match.items.push(...csvRoom.items);
+            } else {
+              rooms.push(csvRoom);
+            }
+          }
+          storage.saveRooms(rooms);
         }
+      } else {
+        storage.saveRooms(toRooms(parsed));
       }
-      storage.saveRooms(rooms);
       renderRoomList();
       alert(`Import complete: ${parsed.length} room(s) processed.`);
     };
