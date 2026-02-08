@@ -36,7 +36,15 @@ body {
 .app-header h1 {
   font-size: 1.5rem;
   text-align: center;
-  padding: 12px 0 16px;
+  padding: 12px 0 4px;
+}
+
+.app-description {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 8px 12px;
 }
 
 /* Warning */
