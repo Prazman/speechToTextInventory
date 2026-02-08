@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventaire Vocal</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- VIEW: Room List -->
+  <section id="view-room-list" class="view active">
+    <header class="app-header">
+      <h1>Inventaire Vocal</h1>
+    </header>
+
+    <div id="speech-warning" class="warning" hidden>
+      La reconnaissance vocale n'est pas disponible sur ce navigateur. Utilisez Chrome ou Edge.
+    </div>
+
+    <div class="add-room-bar">
+      <input type="text" id="input-room-name" placeholder="Nom de la pièce..." autocomplete="off">
+      <button id="btn-add-room">Ajouter</button>
+    </div>
+
+    <ul id="room-list" class="room-list"></ul>
+
+    <div class="export-bar">
+      <button id="btn-export-csv" class="btn-export">Exporter CSV</button>
+    </div>
+  </section>
+
+  <!-- VIEW: Room Detail -->
+  <section id="view-room-detail" class="view">
+    <header class="detail-header">
+      <button id="btn-back" class="btn-back" aria-label="Retour">&larr;</button>
+      <input type="text" id="room-name-edit" class="room-name-edit">
+    </header>
+
+    <div class="mic-area">
+      <button id="btn-mic" class="btn-mic" aria-label="Dictée vocale">🎤</button>
+      <span id="mic-status" class="mic-status"></span>
+    </div>
+
+    <ul id="item-list" class="item-list"></ul>
+
+    <div class="add-item-bar">
+      <input type="text" id="input-item-name" placeholder="Ajouter un objet..." autocomplete="off">
+      <button id="btn-add-item">Ajouter</button>
+    </div>
+  </section>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
