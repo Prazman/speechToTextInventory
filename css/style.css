@@ -130,20 +130,32 @@ body {
   cursor: pointer;
 }
 
-/* Export bar */
+/* Export/Import bar */
 .export-bar {
+  display: flex;
+  gap: 8px;
   margin-top: 16px;
 }
 
-.btn-export {
-  width: 100%;
+.btn-export,
+.btn-import {
+  flex: 1;
   min-height: 48px;
-  background: var(--color-primary);
-  color: white;
   border: none;
   border-radius: var(--radius);
   font-size: 1rem;
   cursor: pointer;
+}
+
+.btn-export {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-import {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 /* Detail header */

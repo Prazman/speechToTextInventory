@@ -1,7 +1,7 @@
 // app.js — Entry point, view management, event wiring
 import * as storage from './storage.js';
 import * as speech from './speech.js';
-import { generateCSV, downloadCSV } from './export.js';
+import { generateCSV, downloadCSV, parseCSV } from './export.js';
 
 // DOM refs
 const viewRoomList = document.getElementById('view-room-list');
@@ -11,6 +11,8 @@ const inputRoomName = document.getElementById('input-room-name');
 const btnAddRoom = document.getElementById('btn-add-room');
 const roomListEl = document.getElementById('room-list');
 const btnExportCSV = document.getElementById('btn-export-csv');
+const btnImportCSV = document.getElementById('btn-import-csv');
+const fileImportCSV = document.getElementById('file-import-csv');
 const btnBack = document.getElementById('btn-back');
 const roomNameEdit = document.getElementById('room-name-edit');
 const btnMic = document.getElementById('btn-mic');
@@ -259,6 +261,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const rooms = storage.loadRooms();
     const csv = generateCSV(rooms);
     downloadCSV(csv);
+  });
+
+  btnImportCSV.addEventListener('click', () => fileImportCSV.click());
+  fileImportCSV.addEventListener('change', () => {
+    const file = fileImportCSV.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = parseCSV(reader.result);
+      if (!parsed.length) { alert('Aucune donnée trouvée dans le CSV.'); return; }
+      // Merge: append items to existing rooms by name, create new rooms otherwise
+      const rooms = storage.loadRooms();
+      for (const csvRoom of parsed) {
+        const existing = rooms.find(r => r.name.toLowerCase() === csvRoom.name.toLowerCase());
+        if (existing) {
+          for (const csvItem of csvRoom.items) {
+            existing.items.push({
+              id: crypto.randomUUID(),
+              item: csvItem.item,
+              quantity: csvItem.quantity,
+              category: csvItem.category,
+              notes: csvItem.notes,
+            });
+          }
+        } else {
+          rooms.push({
+            id: crypto.randomUUID(),
+            name: csvRoom.name,
+            items: csvRoom.items.map(i => ({
+              id: crypto.randomUUID(),
+              item: i.item,
+              quantity: i.quantity,
+              category: i.category,
+              notes: i.notes,
+            })),
+          });
+        }
+      }
+      storage.saveRooms(rooms);
+      renderRoomList();
+      alert(`Import terminé : ${parsed.length} pièce(s) traitée(s).`);
+    };
+    reader.readAsText(file, 'UTF-8');
+    fileImportCSV.value = '';
   });
 
   // Room detail events
