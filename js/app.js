@@ -20,9 +20,15 @@ const micStatus = document.getElementById('mic-status');
 const itemListEl = document.getElementById('item-list');
 const inputItemName = document.getElementById('input-item-name');
 const btnAddItem = document.getElementById('btn-add-item');
+const selectLang = document.getElementById('select-lang');
 
+const LANG_KEY = 'inventory-lang';
 let currentRoomId = null;
 let isRecording = false;
+
+function getSpeechLang() {
+  return selectLang.value;
+}
 
 // --- View Management ---
 
@@ -41,15 +47,15 @@ function renderRoomList() {
     const li = document.createElement('li');
     li.innerHTML = `
       <span class="room-name">${esc(room.name)}</span>
-      <span class="room-count">${totalQty(room)} objet${totalQty(room) !== 1 ? 's' : ''}</span>
-      <button class="btn-delete-room" data-id="${room.id}" aria-label="Supprimer">&times;</button>
+      <span class="room-count">${totalQty(room)} item${totalQty(room) !== 1 ? 's' : ''}</span>
+      <button class="btn-delete-room" data-id="${room.id}" aria-label="Delete">&times;</button>
     `;
     li.addEventListener('click', (e) => {
       if (e.target.closest('.btn-delete-room')) return;
       openRoom(room.id);
     });
     li.querySelector('.btn-delete-room').addEventListener('click', () => {
-      if (confirm(`Supprimer "${room.name}" et tous ses objets ?`)) {
+      if (confirm(`Delete "${room.name}" and all its items?`)) {
         storage.deleteRoom(room.id);
         renderRoomList();
       }
@@ -100,14 +106,14 @@ function appendItemToDOM(item) {
   li.dataset.id = item.id;
   li.innerHTML = `
     <div class="item-row-top">
-      <input class="item-name-input" type="text" value="${escAttr(item.item)}" placeholder="Objet">
-      <button class="btn-delete-item" aria-label="Supprimer">&times;</button>
+      <input class="item-name-input" type="text" value="${escAttr(item.item)}" placeholder="Item">
+      <button class="btn-delete-item" aria-label="Delete">&times;</button>
     </div>
     <div class="item-fields">
-      <input type="number" class="field-quantity" value="${item.quantity ?? 1}" min="1" placeholder="Qté">
-      <input type="text" class="field-category" value="${escAttr(item.category)}" placeholder="Catégorie">
+      <input type="number" class="field-quantity" value="${item.quantity ?? 1}" min="1" placeholder="Qty">
+      <input type="text" class="field-category" value="${escAttr(item.category)}" placeholder="Category">
       <input type="text" class="field-notes" value="${escAttr(item.notes)}" placeholder="Notes">
-      ${speech.isSupported() ? '<button class="btn-mic-notes" aria-label="Dicter notes">🎤</button>' : ''}
+      ${speech.isSupported() ? '<button class="btn-mic-notes" aria-label="Dictate notes">🎤</button>' : ''}
     </div>
   `;
 
@@ -143,7 +149,7 @@ function appendItemToDOM(item) {
     const startNoteMic = () => {
       if (isRecording) stopRecording();
       btnMicNotes.classList.add('listening');
-      speech.listenOnce('fr-FR',
+      speech.listenOnce(getSpeechLang(),
         (transcript) => {
           notesInput.value = notesInput.value
             ? notesInput.value + ' ' + transcript
@@ -188,9 +194,9 @@ function startRecording() {
   isRecording = true;
   btnMic.classList.add('recording');
   btnMic.textContent = '⏹';
-  micStatus.textContent = 'Écoute en cours...';
+  micStatus.textContent = 'Listening...';
 
-  speech.startListening('fr-FR',
+  speech.startListening(getSpeechLang(),
     (transcript) => {
       const lower = transcript.toLowerCase().trim();
       if (lower === 'stop' || lower === 'stop.') {
@@ -201,7 +207,7 @@ function startRecording() {
       if (item) appendItemToDOM(item);
     },
     (err) => {
-      micStatus.textContent = `Erreur: ${err.error || 'inconnue'}`;
+      micStatus.textContent = `Error: ${err.error || 'unknown'}`;
       stopRecording();
     }
   );
@@ -249,6 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btnMic.style.display = 'none';
   }
 
+  // Restore speech language preference
+  const savedLang = localStorage.getItem(LANG_KEY);
+  if (savedLang) selectLang.value = savedLang;
+  selectLang.addEventListener('change', () => {
+    localStorage.setItem(LANG_KEY, selectLang.value);
+  });
+
   renderRoomList();
 
   // Room list events
@@ -270,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reader = new FileReader();
     reader.onload = () => {
       const parsed = parseCSV(reader.result);
-      if (!parsed.length) { alert('Aucune donnée trouvée dans le CSV.'); return; }
+      if (!parsed.length) { alert('No data found in CSV file.'); return; }
       // Merge: append items to existing rooms by name, create new rooms otherwise
       const rooms = storage.loadRooms();
       for (const csvRoom of parsed) {
@@ -301,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       storage.saveRooms(rooms);
       renderRoomList();
-      alert(`Import terminé : ${parsed.length} pièce(s) traitée(s).`);
+      alert(`Import complete: ${parsed.length} room(s) processed.`);
     };
     reader.readAsText(file, 'UTF-8');
     fileImportCSV.value = '';

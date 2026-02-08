@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inventaire Vocal</title>
+  <title>Vocal Inventory</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,23 +11,23 @@
   <!-- VIEW: Room List -->
   <section id="view-room-list" class="view active">
     <header class="app-header">
-      <h1>Inventaire Vocal</h1>
+      <h1>Vocal Inventory</h1>
     </header>
 
     <div id="speech-warning" class="warning" hidden>
-      La reconnaissance vocale n'est pas disponible sur ce navigateur. Utilisez Chrome ou Edge.
+      Web Speech API is not available on this browser, please use Chrome
     </div>
 
     <div class="add-room-bar">
-      <input type="text" id="input-room-name" placeholder="Nom de la pièce..." autocomplete="off">
-      <button id="btn-add-room">Ajouter</button>
+      <input type="text" id="input-room-name" placeholder="Room Name..." autocomplete="off">
+      <button id="btn-add-room">Add Room</button>
     </div>
 
     <ul id="room-list" class="room-list"></ul>
 
     <div class="export-bar">
-      <button id="btn-export-csv" class="btn-export">Exporter CSV</button>
-      <button id="btn-import-csv" class="btn-import">Importer CSV</button>
+      <button id="btn-export-csv" class="btn-export">Export CSV</button>
+      <button id="btn-import-csv" class="btn-import">Import CSV</button>
       <input type="file" id="file-import-csv" accept=".csv" hidden>
     </div>
   </section>
@@ -35,20 +35,27 @@
   <!-- VIEW: Room Detail -->
   <section id="view-room-detail" class="view">
     <header class="detail-header">
-      <button id="btn-back" class="btn-back" aria-label="Retour">&larr;</button>
+      <button id="btn-back" class="btn-back" aria-label="Back">&larr;</button>
       <input type="text" id="room-name-edit" class="room-name-edit">
     </header>
 
     <div class="mic-area">
-      <button id="btn-mic" class="btn-mic" aria-label="Dictée vocale">🎤</button>
+      <div class="mic-row">
+        <button id="btn-mic" class="btn-mic" aria-label="Talk">🎤</button>
+        <select id="select-lang" class="select-lang">
+          <option value="en-US">EN</option>
+          <option value="fr-FR">FR</option>
+          <option value="es-ES">ES</option>
+        </select>
+      </div>
       <span id="mic-status" class="mic-status"></span>
     </div>
 
     <ul id="item-list" class="item-list"></ul>
 
     <div class="add-item-bar">
-      <input type="text" id="input-item-name" placeholder="Ajouter un objet..." autocomplete="off">
-      <button id="btn-add-item">Ajouter</button>
+      <input type="text" id="input-item-name" placeholder="Add Item..." autocomplete="off">
+      <button id="btn-add-item">Add Item</button>
     </div>
   </section>
 
