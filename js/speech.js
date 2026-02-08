@@ -50,3 +50,41 @@ export function stopListening() {
     recognition = null;
   }
 }
+
+// Single-shot: capture one phrase then stop
+let onceRecognition = null;
+
+export function listenOnce(lang = 'fr-FR', onResult, onError) {
+  stopOnce();
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+
+  onceRecognition = new SpeechRecognition();
+  onceRecognition.continuous = false;
+  onceRecognition.interimResults = false;
+  onceRecognition.lang = lang;
+
+  onceRecognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    onResult(transcript);
+    onceRecognition = null;
+  };
+
+  onceRecognition.onerror = (event) => {
+    if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      onError(event);
+    }
+    onceRecognition = null;
+  };
+
+  onceRecognition.onend = () => { onceRecognition = null; };
+
+  onceRecognition.start();
+}
+
+export function stopOnce() {
+  if (onceRecognition) {
+    onceRecognition.abort();
+    onceRecognition = null;
+  }
+}

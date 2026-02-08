@@ -39,7 +39,7 @@ function renderRoomList() {
     const li = document.createElement('li');
     li.innerHTML = `
       <span class="room-name">${esc(room.name)}</span>
-      <span class="room-count">${room.items.length} objet${room.items.length !== 1 ? 's' : ''}</span>
+      <span class="room-count">${totalQty(room)} objet${totalQty(room) !== 1 ? 's' : ''}</span>
       <button class="btn-delete-room" data-id="${room.id}" aria-label="Supprimer">&times;</button>
     `;
     li.addEventListener('click', (e) => {
@@ -102,29 +102,65 @@ function appendItemToDOM(item) {
       <button class="btn-delete-item" aria-label="Supprimer">&times;</button>
     </div>
     <div class="item-fields">
+      <input type="number" class="field-quantity" value="${item.quantity ?? 1}" min="1" placeholder="Qté">
       <input type="text" class="field-category" value="${escAttr(item.category)}" placeholder="Catégorie">
       <input type="text" class="field-notes" value="${escAttr(item.notes)}" placeholder="Notes">
+      ${speech.isSupported() ? '<button class="btn-mic-notes" aria-label="Dicter notes">🎤</button>' : ''}
     </div>
   `;
 
   // Inline edit — save on blur or Enter
   const nameInput = li.querySelector('.item-name-input');
+  const qtyInput = li.querySelector('.field-quantity');
   const catInput = li.querySelector('.field-category');
   const notesInput = li.querySelector('.field-notes');
 
   const save = () => {
     storage.updateItem(currentRoomId, item.id, {
       item: nameInput.value,
+      quantity: parseInt(qtyInput.value, 10) || 1,
       category: catInput.value,
       notes: notesInput.value,
     });
   };
 
-  for (const input of [nameInput, catInput, notesInput]) {
+  for (const input of [nameInput, qtyInput, catInput, notesInput]) {
     input.addEventListener('blur', save);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { save(); input.blur(); }
     });
+  }
+
+  const btnMicNotes = li.querySelector('.btn-mic-notes');
+  if (btnMicNotes) {
+    const stopNoteMic = () => {
+      speech.stopOnce();
+      btnMicNotes.classList.remove('listening');
+    };
+
+    const startNoteMic = () => {
+      if (isRecording) stopRecording();
+      btnMicNotes.classList.add('listening');
+      speech.listenOnce('fr-FR',
+        (transcript) => {
+          notesInput.value = notesInput.value
+            ? notesInput.value + ' ' + transcript
+            : transcript;
+          save();
+          btnMicNotes.classList.remove('listening');
+        },
+        () => { btnMicNotes.classList.remove('listening'); }
+      );
+    };
+
+    // Push-to-talk: hold to dictate, release to stop
+    btnMicNotes.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      startNoteMic();
+    });
+    btnMicNotes.addEventListener('pointerup', stopNoteMic);
+    btnMicNotes.addEventListener('pointerleave', stopNoteMic);
+    btnMicNotes.addEventListener('pointercancel', stopNoteMic);
   }
 
   li.querySelector('.btn-delete-item').addEventListener('click', () => {
@@ -133,6 +169,7 @@ function appendItemToDOM(item) {
   });
 
   itemListEl.appendChild(li);
+  li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function handleAddItem() {
@@ -153,6 +190,11 @@ function startRecording() {
 
   speech.startListening('fr-FR',
     (transcript) => {
+      const lower = transcript.toLowerCase().trim();
+      if (lower === 'stop' || lower === 'stop.') {
+        stopRecording();
+        return;
+      }
       const item = storage.addItem(currentRoomId, transcript);
       if (item) appendItemToDOM(item);
     },
@@ -181,6 +223,10 @@ function handleRoomNameChange() {
 }
 
 // --- Utilities ---
+
+function totalQty(room) {
+  return room.items.reduce((sum, i) => sum + (parseInt(i.quantity, 10) || 1), 0);
+}
 
 function esc(str) {
   const d = document.createElement('div');

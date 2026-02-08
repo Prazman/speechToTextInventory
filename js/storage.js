@@ -40,7 +40,7 @@ export function addItem(roomId, itemName) {
   const rooms = loadRooms();
   const room = rooms.find(r => r.id === roomId);
   if (!room) return null;
-  const item = { id: crypto.randomUUID(), item: itemName, category: '', notes: '' };
+  const item = { id: crypto.randomUUID(), item: itemName, quantity: 1, category: '', notes: '' };
   room.items.push(item);
   saveRooms(rooms);
   return item;

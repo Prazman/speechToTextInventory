@@ -106,7 +106,7 @@ Greenfield project — confirmed clean slate. No legacy constraints.
 - **Web Speech API only (V1)**: Use `SpeechRecognition` / `webkitSpeechRecognition` on Chrome/Edge. Continuous mode stays active until user stops. Language set to `fr-FR`. Firefox/Safari not supported for STT in V1.
 - **No Whisper in V1**: Investigated whisper.cpp WASM — too heavy for mobile. Whisper server fallback deferred to V2.
 - **Browser requirement**: Chrome or Edge on mobile. App will show a clear message if SpeechRecognition API is not available.
-- **Option A dictation flow**: Each recognized phrase = 1 new item row. Category and Notes filled manually post-dictation.
+- **Option A dictation flow**: Each recognized phrase = 1 new item row. Category filled manually. Notes can be dictated per-item via a dedicated mic button (single-shot mode) or typed manually.
 - **localStorage**: All data persisted as JSON in localStorage. No backend needed.
 - **CSV export**: Client-side generation using `Blob` + download link. Comma-delimited with proper escaping.
 - **README updates**: README.md will be updated throughout spec and dev to reflect setup instructions, architecture, and usage.
@@ -124,7 +124,7 @@ Greenfield project — confirmed clean slate. No legacy constraints.
     - `addRoom(name)` — creates a new room object with `{ id: crypto.randomUUID(), name, items: [] }`, appends to rooms, saves, returns the new room
     - `deleteRoom(roomId)` — removes room by id, saves
     - `renameRoom(roomId, newName)` — updates room name, saves
-    - `addItem(roomId, itemName)` — creates `{ id: crypto.randomUUID(), item: itemName, category: '', notes: '' }`, appends to room's items, saves, returns new item
+    - `addItem(roomId, itemName)` — creates `{ id: crypto.randomUUID(), item: itemName, quantity: 1, category: '', notes: '' }`, appends to room's items, saves, returns new item
     - `updateItem(roomId, itemId, fields)` — merges fields into existing item, saves
     - `deleteItem(roomId, itemId)` — removes item from room, saves
   - Notes: All functions operate on the single localStorage key `inventory-data`. Use JSON.parse/stringify. Handle missing/corrupt data gracefully (return defaults).
@@ -135,12 +135,14 @@ Greenfield project — confirmed clean slate. No legacy constraints.
     - `isSupported()` — returns boolean for SpeechRecognition API availability
     - `startListening(lang, onResult, onError)` — creates SpeechRecognition instance, sets `continuous: true`, `interimResults: false`, `lang` param (default `fr-FR`). On each `result` event (isFinal), calls `onResult(transcript)`. On `error`, calls `onError(errorEvent)`. Auto-restarts on `end` event if not explicitly stopped.
     - `stopListening()` — calls `recognition.stop()`, sets flag to prevent auto-restart
-  - Notes: Use `webkitSpeechRecognition || SpeechRecognition` for cross-compat. Handle the `no-speech` and `network` error types specifically. The auto-restart on `end` is needed because Chrome kills recognition after silence — we want continuous mode until user presses stop.
+    - `listenOnce(lang, onResult, onError)` — single-shot recognition: captures one phrase then stops automatically. Used for per-item notes dictation.
+    - `stopOnce()` — aborts any active single-shot recognition
+  - Notes: Use `webkitSpeechRecognition || SpeechRecognition` for cross-compat. Handle the `no-speech` and `network` error types specifically. The auto-restart on `end` is needed because Chrome kills recognition after silence — we want continuous mode until user presses stop. Single-shot mode (`listenOnce`) uses `continuous: false` for one-phrase capture.
 
 - [x] Task 3: Create CSV export module
   - File: `js/export.js`
   - Action: Implement CSV generation and download with the following exports:
-    - `generateCSV(rooms)` — iterates all rooms and their items, produces CSV string with header row `Room,Item,Category,Notes`. Escapes fields containing commas, quotes, or newlines (RFC 4180 compliant). Returns CSV string.
+    - `generateCSV(rooms)` — iterates all rooms and their items, produces CSV string with header row `Room,Item,Quantity,Category,Notes`. Escapes fields containing commas, quotes, or newlines (RFC 4180 compliant). Returns CSV string. Items without quantity field default to 1 (backward compat).
     - `downloadCSV(csvString, filename)` — creates Blob with `text/csv` type, generates object URL, creates temporary `<a>` element with `download` attribute, triggers click, revokes URL.
   - Notes: Default filename format: `inventory-YYYY-MM-DD.csv`. UTF-8 BOM prefix (`\uFEFF`) for Excel compatibility with French characters (accents).
 

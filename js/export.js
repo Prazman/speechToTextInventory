@@ -9,15 +9,16 @@ function escapeCSV(field) {
 }
 
 export function generateCSV(rooms) {
-  const rows = ['Room,Item,Category,Notes'];
+  const rows = ['Room,Item,Quantity,Category,Notes'];
   for (const room of rooms) {
     if (room.items.length === 0) {
-      rows.push(`${escapeCSV(room.name)},,,`);
+      rows.push(`${escapeCSV(room.name)},,,,`);
     } else {
       for (const item of room.items) {
         rows.push([
           escapeCSV(room.name),
           escapeCSV(item.item),
+          escapeCSV(item.quantity ?? 1),
           escapeCSV(item.category),
           escapeCSV(item.notes),
         ].join(','));

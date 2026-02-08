@@ -152,6 +152,11 @@ body {
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  padding: 8px 0;
 }
 
 .btn-back {
@@ -184,6 +189,11 @@ body {
   align-items: center;
   gap: 8px;
   margin-bottom: 20px;
+  position: sticky;
+  top: 60px;
+  z-index: 9;
+  background: var(--color-bg);
+  padding: 8px 0;
 }
 
 .btn-mic {
@@ -254,6 +264,7 @@ body {
 
 .item-fields input {
   flex: 1;
+  min-width: 0;
   min-height: 36px;
   padding: 4px 8px;
   border: 1px solid var(--color-border);
@@ -262,8 +273,35 @@ body {
   color: var(--color-text);
 }
 
+.item-fields .field-quantity {
+  flex: 0 0 52px;
+  text-align: center;
+}
+
 .item-fields input::placeholder {
   color: var(--color-muted);
+}
+
+.btn-mic-notes {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+  touch-action: none;
+  user-select: none;
+}
+
+.btn-mic-notes.listening {
+  background: var(--color-recording);
+  border-color: var(--color-recording);
+  animation: pulse 1.5s infinite;
 }
 
 .btn-delete-item {

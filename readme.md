@@ -7,7 +7,9 @@ A mobile-friendly web app for inventorying belongings by voice. Walk through you
 - Create and manage rooms/storage areas
 - Voice dictation via Web Speech API (Chrome/Edge) — speak in French (fr-FR)
 - Each spoken phrase becomes one inventory item
-- Inline editing of Item, Category, and Notes fields
+- Per-item voice dictation for notes (tap the mic icon next to the Notes field)
+- Quantity field per item (room list shows total count with plural)
+- Inline editing of Item, Quantity, Category, and Notes fields
 - Manual item entry (no mic required)
 - CSV export with proper French character support (accents)
 - All data saved locally in the browser (localStorage)
@@ -40,8 +42,9 @@ Then open `http://localhost:8000` on your phone's Chrome browser.
 1. **Add a room** — type the room name and tap "Ajouter"
 2. **Enter the room** — tap on a room to open it
 3. **Dictate items** — tap the mic button and start speaking. Each phrase creates one item.
-4. **Edit details** — tap any item field to edit the name, category, or notes
-5. **Export** — tap "Exporter CSV" from the room list to download your full inventory
+4. **Edit details** — tap any item field to edit the name, quantity, category, or notes
+5. **Dictate notes** — tap the small mic icon next to a Notes field to dictate (appends to existing notes)
+6. **Export** — tap "Exporter CSV" from the room list to download your full inventory
 
 ## File Structure
 
